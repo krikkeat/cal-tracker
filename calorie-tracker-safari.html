@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0e1410">
+<title>แคลกินดี · Calorie Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1410;--panel:#16201a;--panel2:#1d2b22;--line:#2a3c30;
+    --lime:#b6f24a;--lime-dim:#8bbf36;--cream:#eef3e6;--muted:#8fa590;
+    --amber:#f2b84a;--red:#f26a5a;--radius:22px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{background:var(--bg);color:var(--cream);font-family:'Bai Jamjuree',sans-serif;}
+  body{
+    max-width:480px;margin:0 auto;min-height:100vh;
+    background:
+      radial-gradient(900px 500px at 80% -10%, rgba(182,242,74,.10), transparent 60%),
+      radial-gradient(700px 500px at -10% 100%, rgba(242,184,74,.06), transparent 55%),
+      var(--bg);
+    padding:max(22px,env(safe-area-inset-top)) 18px calc(120px + env(safe-area-inset-bottom));
+  }
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .brand h1{font-family:'Fraunces',serif;font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1;}
+  .brand .dot{color:var(--lime);}
+  .brand span{font-size:12px;color:var(--muted);margin-top:4px;display:block;}
+  .gear{background:var(--panel);border:1px solid var(--line);width:44px;height:44px;border-radius:14px;
+    display:grid;place-items:center;font-size:19px;cursor:pointer;color:var(--cream);transition:.2s;}
+  .gear:active{transform:scale(.92);}
+
+  .hero{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);
+    border-radius:var(--radius);padding:24px 22px;position:relative;overflow:hidden;}
+  .hero::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(400px 200px at 110% -20%,rgba(182,242,74,.12),transparent 60%);pointer-events:none;}
+  .ring-wrap{display:flex;align-items:center;gap:20px;}
+  .ring{position:relative;width:138px;height:138px;flex-shrink:0;}
+  .ring svg{transform:rotate(-90deg);}
+  .ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .ring .center b{font-family:'Fraunces',serif;font-size:30px;font-weight:600;line-height:1;}
+  .ring .center small{font-size:11px;color:var(--muted);margin-top:3px;}
+  .hero-info{flex:1;}
+  .hero-info .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+  .hero-info .big{font-family:'Fraunces',serif;font-size:34px;font-weight:600;line-height:1.05;margin:2px 0;}
+  .hero-info .unit{font-size:14px;color:var(--lime-dim);}
+  .hero-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .chip{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:11px;padding:7px 11px;font-size:12px;}
+  .chip b{font-family:'Fraunces',serif;color:var(--lime);font-weight:600;}
+  .over{color:var(--red)!important;}
+
+  .macros{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+  .macro{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;}
+  .macro .mt{font-size:11px;color:var(--muted);}
+  .macro .mv{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin:3px 0 6px;}
+  .macro .bar{height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;}
+  .macro .bar i{display:block;height:100%;border-radius:99px;transition:width .6s;}
+  .m-p i{background:var(--lime);} .m-c i{background:var(--amber);} .m-f i{background:var(--red);}
+
+  .sec{display:flex;align-items:center;justify-content:space-between;margin:26px 4px 12px;}
+  .sec h2{font-family:'Fraunces',serif;font-size:19px;font-weight:600;}
+  .sec .date{font-size:12px;color:var(--muted);}
+
+  .addbtn{width:100%;background:var(--lime);color:#15200f;border:none;border-radius:18px;padding:17px;
+    font-family:'Bai Jamjuree';font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+    justify-content:center;gap:10px;transition:.15s;box-shadow:0 8px 24px rgba(182,242,74,.22);}
+  .addbtn:active{transform:scale(.97);}
+  .addbtn svg{width:22px;height:22px;}
+
+  .meals{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+  .meal{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:13px;
+    display:flex;gap:13px;align-items:center;animation:pop .35s ease;}
+  @keyframes pop{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .meal img{width:54px;height:54px;border-radius:12px;object-fit:cover;flex-shrink:0;background:var(--panel2);}
+  .meal .noimg{width:54px;height:54px;border-radius:12px;display:grid;place-items:center;background:var(--panel2);font-size:22px;flex-shrink:0;}
+  .meal .info{flex:1;min-width:0;}
+  .meal .info .nm{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .meal .info .mc{font-size:12px;color:var(--muted);margin-top:2px;}
+  .meal .kcal{font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:var(--lime);}
+  .meal .del{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 6px;}
+  .empty{text-align:center;color:var(--muted);font-size:13px;padding:30px 10px;border:1px dashed var(--line);border-radius:16px;margin-top:14px;}
+
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
+    display:none;align-items:flex-end;justify-content:center;z-index:50;}
+  .modal.show{display:flex;}
+  .sheet{background:var(--panel);border:1px solid var(--line);border-radius:26px 26px 0 0;width:100%;
+    max-width:480px;padding:24px 20px calc(32px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto;animation:up .3s ease;}
+  @keyframes up{from{transform:translateY(100%);}to{transform:none;}}
+  .sheet h3{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:4px;}
+  .sheet .sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+  .field{margin-bottom:15px;}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px;}
+  .field input,.field select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:13px;
+    padding:14px;color:var(--cream);font-family:'Bai Jamjuree';font-size:15px;}
+  .field input:focus,.field select:focus{outline:none;border-color:var(--lime-dim);}
+  .seg{display:flex;gap:8px;}
+  .seg button{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px 6px;
+    color:var(--muted);font-family:'Bai Jamjuree';font-size:12px;font-weight:600;cursor:pointer;transition:.15s;}
+  .seg button.on{background:var(--lime);color:#15200f;border-color:var(--lime);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .save{width:100%;background:var(--lime);color:#15200f;border:none;border-radius:15px;padding:16px;
+    font-family:'Bai Jamjuree';font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;}
+  .save:active{transform:scale(.98);}
+  .ghost{width:100%;background:none;border:1px solid var(--line);color:var(--muted);border-radius:15px;
+    padding:14px;font-family:'Bai Jamjuree';font-size:14px;cursor:pointer;margin-top:10px;}
+
+  .drop{border:2px dashed var(--line);border-radius:18px;padding:28px;text-align:center;cursor:pointer;transition:.2s;}
+  .drop:active{border-color:var(--lime-dim);background:rgba(182,242,74,.04);}
+  .drop .ic{font-size:38px;}
+  .drop p{font-size:13px;color:var(--muted);margin-top:8px;}
+  .preview{position:relative;border-radius:16px;overflow:hidden;margin-bottom:16px;}
+  .preview img{width:100%;display:block;max-height:260px;object-fit:cover;}
+  .analyzing{display:flex;align-items:center;gap:12px;justify-content:center;padding:24px;color:var(--lime);font-size:14px;}
+  .spin{width:20px;height:20px;border:2.5px solid rgba(182,242,74,.25);border-top-color:var(--lime);
+    border-radius:50%;animation:rot .7s linear infinite;}
+  @keyframes rot{to{transform:rotate(360deg);}}
+  .result-card{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .result-card .rk{font-family:'Fraunces',serif;font-size:34px;font-weight:600;color:var(--lime);}
+  .result-card .rk small{font-size:14px;color:var(--muted);font-family:'Bai Jamjuree';}
+  .result-card .rn{font-size:15px;font-weight:600;margin:2px 0 10px;}
+  .rmacros{display:flex;gap:14px;font-size:13px;color:var(--muted);}
+  .rmacros b{color:var(--cream);font-weight:600;}
+  .err{background:rgba(242,106,90,.1);border:1px solid var(--red);color:#ffb3aa;border-radius:13px;
+    padding:13px;font-size:13px;margin-bottom:14px;line-height:1.5;}
+  .info-box{background:rgba(182,242,74,.07);border:1px solid var(--lime-dim);border-radius:13px;
+    padding:13px;font-size:12.5px;color:var(--cream);margin-bottom:16px;line-height:1.6;}
+  .info-box a{color:var(--lime);font-weight:600;}
+  .info-box ol{margin:8px 0 0 18px;}
+  .info-box li{margin-bottom:4px;}
+  .keystatus{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 9px;border-radius:8px;margin-top:6px;}
+  .keystatus.ok{background:rgba(182,242,74,.12);color:var(--lime);}
+  .keystatus.no{background:rgba(242,106,90,.12);color:var(--red);}
+  .hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>แคลกินดี<span class="dot">.</span></h1>
+    <span>ถ่ายรูป · คำนวณแคล · ติดตามทุกวัน</span>
+  </div>
+  <div class="gear" onclick="openSetup()">⚙️</div>
+</header>
+
+<div class="hero">
+  <div class="ring-wrap">
+    <div class="ring">
+      <svg width="138" height="138">
+        <circle cx="69" cy="69" r="60" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="11"/>
+        <circle id="ringFill" cx="69" cy="69" r="60" fill="none" stroke="var(--lime)" stroke-width="11"
+          stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"/>
+      </svg>
+      <div class="center">
+        <b id="ringEaten">0</b>
+        <small id="ringLeft">ตั้งค่าก่อน</small>
+      </div>
+    </div>
+    <div class="hero-info">
+      <div class="lbl">เป้าหมายวันนี้</div>
+      <div class="big"><span id="goalKcal">—</span></div>
+      <div class="unit">kcal / วัน</div>
+      <div class="hero-row">
+        <div class="chip">TDEE <b id="chipTdee">—</b></div>
+        <div class="chip" id="chipGoalType">รักษาน้ำหนัก</div>
+      </div>
+    </div>
+  </div>
+  <div class="macros">
+    <div class="macro m-p"><div class="mt">โปรตีน</div><div class="mv"><span id="pVal">0</span>g</div>
+      <div class="bar"><i id="pBar" style="width:0"></i></div></div>
+    <div class="macro m-c"><div class="mt">คาร์บ</div><div class="mv"><span id="cVal">0</span>g</div>
+      <div class="bar"><i id="cBar" style="width:0"></i></div></div>
+    <div class="macro m-f"><div class="mt">ไขมัน</div><div class="mv"><span id="fVal">0</span>g</div>
+      <div class="bar"><i id="fBar" style="width:0"></i></div></div>
+  </div>
+</div>
+
+<div class="sec">
+  <h2>มื้ออาหารวันนี้</h2>
+  <div class="date" id="today"></div>
+</div>
+
+<button class="addbtn" onclick="openAdd()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+    <path d="M3 7h2l1.5-2h5L13 7h5a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 1-2z"/>
+    <circle cx="11" cy="13" r="3.2"/></svg>
+  ถ่ายรูปอาหาร / เพิ่มมื้อ
+</button>
+
+<div class="meals" id="mealList"></div>
+
+<!-- SETUP -->
+<div class="modal" id="setupModal">
+  <div class="sheet">
+    <h3>ตั้งค่า</h3>
+    <p class="sub">กรอกข้อมูลร่างกายเพื่อคำนวณ TDEE และตั้งค่า API key สำหรับวิเคราะห์รูป</p>
+
+    <div class="field">
+      <label>เพศ</label>
+      <div class="seg" id="segSex">
+        <button data-v="male" class="on">ชาย</button>
+        <button data-v="female">หญิง</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>น้ำหนัก (กก.)</label><input id="inW" type="number" inputmode="decimal" placeholder="70"></div>
+      <div class="field"><label>ส่วนสูง (ซม.)</label><input id="inH" type="number" inputmode="decimal" placeholder="172"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>อายุ (ปี)</label><input id="inAge" type="number" inputmode="numeric" placeholder="28"></div>
+      <div class="field"><label>% ไขมัน (ไม่บังคับ)</label><input id="inBf" type="number" inputmode="decimal" placeholder="18"></div>
+    </div>
+    <div class="field">
+      <label>วันออกกำลังกาย / สัปดาห์</label>
+      <select id="inDays">
+        <option value="1.2">0 วัน (นั่งทำงานทั้งวัน)</option>
+        <option value="1.375">1–2 วัน (เบา)</option>
+        <option value="1.55" selected>3–4 วัน (ปานกลาง)</option>
+        <option value="1.725">5–6 วัน (หนัก)</option>
+        <option value="1.9">7 วัน (หนักมาก/นักกีฬา)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>เป้าหมาย</label>
+      <div class="seg" id="segGoal">
+        <button data-v="cut" data-adj="-0.20">ลดไขมัน</button>
+        <button data-v="maintain" data-adj="0" class="on">รักษา</button>
+        <button data-v="bulk" data-adj="0.12">เพิ่มกล้าม</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Gemini API Key (สำหรับวิเคราะห์รูป)</label>
+      <input id="inKey" type="text" placeholder="วาง API key ที่นี่" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div id="keyStatus"></div>
+    </div>
+    <div class="info-box">
+      🔑 วิธีขอ API key ฟรี (ไม่ต้องใช้บัตรเครดิต):
+      <ol>
+        <li>เปิด <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a></li>
+        <li>ล็อกอินด้วยบัญชี Google</li>
+        <li>กด "Create API key" แล้วคัดลอกมาวาง</li>
+      </ol>
+    </div>
+
+    <button class="save" onclick="saveSetup()">บันทึก</button>
+    <button class="ghost" onclick="closeModal('setupModal')">ปิด</button>
+  </div>
+</div>
+
+<!-- ADD MEAL -->
+<div class="modal" id="addModal">
+  <div class="sheet">
+    <h3>เพิ่มมื้ออาหาร</h3>
+    <p class="sub">ถ่ายรูป แล้วให้ AI ประเมินแคลอรีอัตโนมัติ</p>
+
+    <div id="dropZone" class="drop" onclick="document.getElementById('fileIn').click()">
+      <div class="ic">📸</div>
+      <p>แตะเพื่อถ่ายรูป หรือเลือกรูปอาหาร</p>
+    </div>
+    <input id="fileIn" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleFile(event)">
+
+    <div id="previewBox" class="hidden">
+      <div class="preview"><img id="previewImg" alt=""></div>
+      <div id="analyzeBox"></div>
+    </div>
+    <div id="resultBox"></div>
+    <button class="ghost" onclick="closeAdd()">ยกเลิก</button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const CIRC = 377;
+
+// ---------- STORAGE (localStorage) ----------
+function dbGet(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return null; } }
+function dbSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ console.warn(e); return false; } }
+
+let profile = dbGet('profile');
+let apiKey = localStorage.getItem('geminiKey') || '';
+let meals = [];
+const todayKey = () => 'day_' + new Date().toISOString().slice(0,10).replace(/-/g,'_');
+
+// ---------- IMAGE RESIZE ----------
+function resizeImage(dataUrl, maxSize=512, quality=0.8){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let {width:w, height:h} = img;
+      const scale = Math.min(maxSize/w, maxSize/h, 1);
+      w=Math.round(w*scale); h=Math.round(h*scale);
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(cv.toDataURL('image/jpeg', quality));
+    };
+    img.onerror=()=>resolve(null);
+    img.src=dataUrl;
+  });
+}
+
+// ---------- INIT ----------
+function init(){
+  $('#today').textContent = new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'short'});
+  meals = dbGet(todayKey()) || [];
+  if(!profile){ openSetup(); }
+  render();
+}
+
+document.querySelectorAll('.seg').forEach(seg=>{
+  seg.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    seg.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+  });
+});
+
+// ---------- TDEE ----------
+function calcTDEE(){
+  const sex=$('#segSex .on').dataset.v;
+  const w=parseFloat($('#inW').value), h=parseFloat($('#inH').value);
+  const age=parseFloat($('#inAge').value), bf=parseFloat($('#inBf').value);
+  const act=parseFloat($('#inDays').value);
+  const gb=$('#segGoal .on'); const goal=gb.dataset.v, adj=parseFloat(gb.dataset.adj);
+  if(!w||!h||!age){ alert('กรุณากรอก น้ำหนัก ส่วนสูง และอายุ'); return null; }
+  let bmr;
+  if(!isNaN(bf)&&bf>0){ const lbm=w*(1-bf/100); bmr=370+21.6*lbm; }
+  else{ bmr=10*w+6.25*h-5*age+(sex==='male'?5:-161); }
+  const tdee=bmr*act, goalKcal=tdee*(1+adj);
+  const protein=Math.round(w*2), fat=Math.round((goalKcal*0.25)/9);
+  const carb=Math.round((goalKcal-protein*4-fat*9)/4);
+  return {sex,w,h,age,bf:isNaN(bf)?null:bf,act,goal,adj,
+    tdee:Math.round(tdee),goalKcal:Math.round(goalKcal),protein,carb:Math.max(carb,0),fat};
+}
+
+function saveSetup(){
+  const p=calcTDEE(); if(!p) return;
+  profile=p; dbSet('profile',profile);
+  apiKey=$('#inKey').value.trim(); localStorage.setItem('geminiKey',apiKey);
+  closeModal('setupModal'); render();
+}
+
+// ---------- RENDER ----------
+function render(){
+  if(profile){
+    $('#goalKcal').textContent=profile.goalKcal.toLocaleString();
+    $('#chipTdee').textContent=profile.tdee.toLocaleString();
+    $('#chipGoalType').textContent={cut:'ลดไขมัน',maintain:'รักษาน้ำหนัก',bulk:'เพิ่มกล้าม'}[profile.goal];
+  }
+  const eaten=meals.reduce((s,m)=>s+m.kcal,0);
+  const P=meals.reduce((s,m)=>s+(m.protein||0),0);
+  const C=meals.reduce((s,m)=>s+(m.carb||0),0);
+  const F=meals.reduce((s,m)=>s+(m.fat||0),0);
+  $('#ringEaten').textContent=Math.round(eaten).toLocaleString();
+  if(profile){
+    const left=profile.goalKcal-eaten;
+    $('#ringLeft').innerHTML = left>=0?`เหลือ ${Math.round(left).toLocaleString()} kcal`
+      :`<span class="over">เกิน ${Math.abs(Math.round(left)).toLocaleString()} kcal</span>`;
+    const pct=Math.min(eaten/profile.goalKcal,1);
+    $('#ringFill').style.strokeDashoffset=CIRC*(1-pct);
+    $('#ringFill').style.stroke=eaten>profile.goalKcal?'var(--red)':'var(--lime)';
+    $('#pVal').textContent=Math.round(P); $('#cVal').textContent=Math.round(C); $('#fVal').textContent=Math.round(F);
+    $('#pBar').style.width=Math.min(P/profile.protein*100,100)+'%';
+    $('#cBar').style.width=Math.min(C/profile.carb*100,100)+'%';
+    $('#fBar').style.width=Math.min(F/profile.fat*100,100)+'%';
+  }else{ $('#ringLeft').textContent='ตั้งค่าก่อน'; }
+  renderMeals();
+}
+
+function renderMeals(){
+  const el=$('#mealList');
+  if(meals.length===0){ el.innerHTML=`<div class="empty">ยังไม่มีมื้ออาหารวันนี้<br>แตะปุ่มด้านบนเพื่อถ่ายรูปอาหาร 🍽️</div>`; return; }
+  el.innerHTML=meals.map((m,i)=>`
+    <div class="meal">
+      ${m.img?`<img src="${m.img}" alt="">`:`<div class="noimg">🍱</div>`}
+      <div class="info">
+        <div class="nm">${m.name}</div>
+        <div class="mc">P ${Math.round(m.protein||0)} · C ${Math.round(m.carb||0)} · F ${Math.round(m.fat||0)} g</div>
+      </div>
+      <div class="kcal">${Math.round(m.kcal)}</div>
+      <button class="del" onclick="delMeal(${i})">✕</button>
+    </div>`).join('');
+}
+
+function delMeal(i){ meals.splice(i,1); dbSet(todayKey(),meals); render(); }
+
+// ---------- MODALS ----------
+function openSetup(){
+  if(profile){
+    $('#inW').value=profile.w; $('#inH').value=profile.h; $('#inAge').value=profile.age;
+    $('#inBf').value=profile.bf??''; $('#inDays').value=profile.act;
+    $('#segSex').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===profile.sex));
+    $('#segGoal').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===profile.goal));
+  }
+  $('#inKey').value=apiKey;
+  updateKeyStatus();
+  $('#setupModal').classList.add('show');
+}
+function updateKeyStatus(){
+  const el=$('#keyStatus');
+  if(apiKey){ el.innerHTML=`<span class="keystatus ok">✓ มี API key แล้ว</span>`; }
+  else{ el.innerHTML=`<span class="keystatus no">✕ ยังไม่มี key — วิเคราะห์รูปอัตโนมัติไม่ได้ (กรอกแคลเองได้)</span>`; }
+}
+function openAdd(){
+  if(!profile){ alert('กรุณาตั้งค่าร่างกายก่อน'); openSetup(); return; }
+  $('#previewBox').classList.add('hidden'); $('#resultBox').innerHTML=''; $('#analyzeBox').innerHTML='';
+  $('#dropZone').classList.remove('hidden'); $('#fileIn').value='';
+  $('#addModal').classList.add('show');
+}
+function closeAdd(){ $('#addModal').classList.remove('show'); }
+function closeModal(id){ $('#'+id).classList.remove('show'); }
+
+// ---------- PHOTO + GEMINI ----------
+let pendingResult=null;
+
+function handleFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async()=>{
+    const small=await resizeImage(reader.result);
+    $('#previewImg').src=small;
+    $('#previewBox').classList.remove('hidden');
+    $('#dropZone').classList.add('hidden');
+    if(apiKey){ analyzePhoto(small); }
+    else{
+      $('#resultBox').innerHTML=`<div class="err">ยังไม่มี Gemini API key — กรอกข้อมูลเองด้านล่าง หรือไปตั้งค่า key ที่ ⚙️</div>`+manualForm();
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzePhoto(dataUrl){
+  $('#analyzeBox').innerHTML=`<div class="analyzing"><div class="spin"></div>กำลังวิเคราะห์อาหาร...</div>`;
+  $('#resultBox').innerHTML='';
+  const base64=dataUrl.split(',')[1];
+  const prompt=`คุณเป็นนักโภชนาการ วิเคราะห์รูปอาหารนี้ ประมาณค่าสารอาหารจากปริมาณที่เห็นในภาพ ตอบกลับเป็น JSON เท่านั้น ห้ามมีข้อความหรือ markdown อื่น:
+{"name":"ชื่ออาหารภาษาไทยสั้นๆ","kcal":ตัวเลขแคลอรีรวม,"protein":กรัมโปรตีน,"carb":กรัมคาร์บ,"fat":กรัมไขมัน,"note":"หมายเหตุสั้นๆ"}
+ถ้าไม่ใช่รูปอาหาร ให้ตอบ {"name":"ไม่พบอาหาร","kcal":0,"protein":0,"carb":0,"fat":0,"note":"รูปนี้ไม่ใช่อาหาร"}`;
+
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        contents:[{parts:[
+          {inline_data:{mime_type:"image/jpeg",data:base64}},
+          {text:prompt}
+        ]}],
+        generationConfig:{temperature:0.2, responseMimeType:"application/json"}
+      })
+    });
+    if(!res.ok){
+      const errTxt=await res.text();
+      throw new Error(res.status===400?'API key ไม่ถูกต้อง หรือรูปแบบผิด':`HTTP ${res.status}: ${errTxt.slice(0,120)}`);
+    }
+    const data=await res.json();
+    let txt=data.candidates?.[0]?.content?.parts?.map(p=>p.text).join('')||'';
+    txt=txt.replace(/```json|```/g,'').trim();
+    const r=JSON.parse(txt);
+    pendingResult={...r, img:dataUrl};
+    showResult(pendingResult);
+  }catch(err){
+    $('#analyzeBox').innerHTML='';
+    $('#resultBox').innerHTML=`<div class="err">วิเคราะห์ไม่สำเร็จ: ${err.message}<br>กรอกข้อมูลเองด้านล่างได้</div>`+manualForm();
+  }
+}
+
+function showResult(r){
+  $('#analyzeBox').innerHTML='';
+  if(r.kcal===0 && r.name==='ไม่พบอาหาร'){
+    $('#resultBox').innerHTML=`<div class="err">${r.note||'ไม่พบอาหารในรูป'}</div>`+manualForm();
+    return;
+  }
+  $('#resultBox').innerHTML=`
+    <div class="result-card">
+      <div class="rn">${r.name}</div>
+      <div class="rk">${Math.round(r.kcal)}<small> kcal</small></div>
+      <div class="rmacros" style="margin-top:8px">
+        <span>โปรตีน <b>${Math.round(r.protein)}g</b></span>
+        <span>คาร์บ <b>${Math.round(r.carb)}g</b></span>
+        <span>ไขมัน <b>${Math.round(r.fat)}g</b></span>
+      </div>
+      ${r.note?`<div style="font-size:12px;color:var(--muted);margin-top:10px">${r.note}</div>`:''}
+    </div>
+    <div class="field"><label>แก้ไขแคลอรี (ถ้าต้องการ)</label><input id="editKcal" type="number" value="${Math.round(r.kcal)}"></div>
+    <button class="save" onclick="confirmMeal()">เพิ่มลงวันนี้ ✓</button>`;
+}
+
+function manualForm(){
+  return `
+    <div class="field"><label>ชื่ออาหาร</label><input id="mName" placeholder="เช่น ข้าวกะเพราไก่ไข่ดาว"></div>
+    <div class="row2">
+      <div class="field"><label>แคลอรี</label><input id="mKcal" type="number" placeholder="650"></div>
+      <div class="field"><label>โปรตีน (g)</label><input id="mP" type="number" placeholder="30"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>คาร์บ (g)</label><input id="mC" type="number" placeholder="70"></div>
+      <div class="field"><label>ไขมัน (g)</label><input id="mF" type="number" placeholder="22"></div>
+    </div>
+    <button class="save" onclick="confirmManual()">เพิ่มลงวันนี้ ✓</button>`;
+}
+
+function confirmMeal(){
+  const k=parseFloat($('#editKcal').value)||pendingResult.kcal;
+  meals.push({name:pendingResult.name,kcal:k,protein:pendingResult.protein,
+    carb:pendingResult.carb,fat:pendingResult.fat,img:pendingResult.img});
+  dbSet(todayKey(),meals); closeAdd(); render();
+}
+
+function confirmManual(){
+  const name=$('#mName').value||'อาหาร';
+  const k=parseFloat($('#mKcal').value)||0;
+  if(!k){ alert('กรุณากรอกแคลอรี'); return; }
+  const img=(!$('#previewBox').classList.contains('hidden')&&$('#previewImg').src)?$('#previewImg').src:null;
+  meals.push({name,kcal:k,protein:parseFloat($('#mP').value)||0,
+    carb:parseFloat($('#mC').value)||0,fat:parseFloat($('#mF').value)||0,img});
+  dbSet(todayKey(),meals); closeAdd(); render();
+}
+
+init();
+</script>
+</body>
+</html>
